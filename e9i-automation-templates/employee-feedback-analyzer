@@ -1,0 +1,1565 @@
+{
+  "name": "Team 3 Project - Employee Feedback Analyzer",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        352
+      ],
+      "id": "5b5c5ad6-5b19-4e78-a232-95bff42f47f0",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "7JbKmrcedqdtoANn",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1952,
+        80
+      ],
+      "id": "20b4d255-2893-47a0-acc2-6b3a01bbef67",
+      "name": "Wait",
+      "webhookId": "66b50b14-db84-4adc-a148-bba762dd5312"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2480,
+        352
+      ],
+      "id": "7c0ed691-d459-4665-b6a8-47c26b6a16bf",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "7JbKmrcedqdtoANn",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"sentiment\": \"\",\n  \"confidence\": \"\",\n  \"rationale\": \"\",\n  \"themes\": [\n    {\n      \"title\": \"\"\n    },\n    {\n      \"title\": \"\"\n    },\n    {\n      \"title\": \"\"\n    }\n  ],\n  \"subtopics\": [],\n  \"urgency\": {\n    \"urgency\": \"\",\n    \"triggers\": []\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1040,
+        336
+      ],
+      "id": "32d12f61-3729-42a2-8867-b397392dcdcb",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"executive_summary\": { \"type\": \"string\" },\n    \"overview\": { \"type\": \"string\" },\n    \"key_metrics\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"total_responses\": { \"type\": \"integer\" },\n        \"average_sentiment_score\": { \"type\": \"number\" },\n        \"sentiment_distribution\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"very_positive\": { \"type\": \"integer\" },\n            \"positive\": { \"type\": \"integer\" },\n            \"neutral\": { \"type\": \"integer\" },\n            \"negative\": { \"type\": \"integer\" },\n            \"very_negative\": { \"type\": \"integer\" }\n          },\n          \"required\": [\"very_positive\", \"positive\", \"neutral\", \"negative\", \"very_negative\"]\n        },\n        \"urgent_issue_count\": { \"type\": \"integer\" },\n        \"department_participation\": { \"type\": \"string\" }\n      },\n      \"required\": [\n        \"total_responses\",\n        \"average_sentiment_score\",\n        \"sentiment_distribution\",\n        \"urgent_issue_count\",\n        \"department_participation\"\n      ]\n    },\n    \"top_positive_themes\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" }\n    },\n    \"top_friction_points\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" }\n    },\n    \"urgent_issues\": { \"type\": \"string\" },\n    \"suggested_actions_next_quarter\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" }\n    },\n    \"notable_quotes\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"dept\": { \"type\": \"string\" },\n          \"quote\": { \"type\": \"string\" }\n        },\n        \"required\": [\"dept\", \"quote\"]\n      }\n    },\n    \"conclusion\": { \"type\": \"string\" }\n  },\n  \"required\": [\n    \"executive_summary\",\n    \"overview\",\n    \"key_metrics\",\n    \"top_positive_themes\",\n    \"top_friction_points\",\n    \"urgent_issues\",\n    \"suggested_actions_next_quarter\",\n    \"notable_quotes\",\n    \"conclusion\"\n  ]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2736,
+        368
+      ],
+      "id": "7cd579bb-8ca4-43d6-a4aa-aa5e80373496",
+      "name": "Structured Output Parser3"
+    },
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "httpMethod": [
+          "POST"
+        ],
+        "path": "183a28a7-83f6-4f83-b1dd-05864dced0ad",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        272,
+        -64
+      ],
+      "id": "c4040757-0a27-4c33-9678-ac05e8b448d1",
+      "name": "Form_Webhook",
+      "webhookId": "183a28a7-83f6-4f83-b1dd-05864dced0ad",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node: parse webhook body string -> object + structured combined JSON\n\nfunction tryParseJson(str) {\n  try {\n    return JSON.parse(str);\n  } catch (e) {\n    return null;\n  }\n}\n\nconst input = $json;\n\n// Step 1: Parse body safely\nlet parsedBody = null;\nif (typeof input.body === 'object' && input.body !== null) {\n  parsedBody = input.body;\n} else if (typeof input.body === 'string') {\n  parsedBody = tryParseJson(input.body);\n  if (parsedBody === null) {\n    const m = input.body.match(/(\\{[\\s\\S]*\\})/);\n    if (m) parsedBody = tryParseJson(m[1]);\n  }\n}\n\nconst out = { ...input };\n\nif (!parsedBody || typeof parsedBody !== 'object') {\n  out.body_parse_error = true;\n  out.combined_text = '';\n  out.combined_preview = '';\n  out.combined_json = {};\n  return [{ json: out }];\n}\n\nout.body = parsedBody;\n\n// Step 2: Fields and labels\nconst fields = [\n  { key: 'overall_why', label: 'Overall' },\n  { key: 'leadership_text', label: 'Leadership' },\n  { key: 'management_text', label: 'Management' },\n  { key: 'workload_text', label: 'Workload' },\n  { key: 'urgent_reason', label: 'Urgent_Reason' },\n  { key: 'one_change', label: 'Suggested_Change' }\n];\n\n// Step 3: Build combined text and JSON\nconst combinedParts = [];\nconst combinedJson = {};\n\nfor (const f of fields) {\n  const v = parsedBody[f.key];\n  if (v !== undefined && v !== null && String(v).trim().length > 0) {\n    const val = String(v).trim();\n    combinedParts.push(`**${f.label}:**\\n${val}`);\n    combinedJson[f.label] = val;\n  }\n}\n\n// Step 4: Add outputs\nconst combinedText = combinedParts.join('\\n\\n');\nout.combined_text = combinedText;\nout.combined_preview = combinedText.slice(0, 750) + (combinedText.length > 750 ? '…' : '');\nout.combined_json = combinedJson;\n\n// Optional: top-level merge of parsedBody\n// Object.assign(out, parsedBody);\n\nreturn [{ json: out }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        -64
+      ],
+      "id": "422e3208-e47a-4ad5-b4f3-e82dd5ff7166",
+      "name": "Combine_Texts"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag",
+          "mode": "list",
+          "cachedResultName": "Employee Survey",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TimeStamp": "={{ $json.body.timestamp }}",
+            "Department": "={{ $json.body.department }}",
+            "Role Level": "={{ $json.body.role_level }}",
+            "Location": "={{ $json.body.location }}",
+            "Tenure": "={{ $json.body.tenure }}",
+            "Manager": "={{ $json.body.manager }}",
+            "How satisfied are you with your overall work experience?": "={{ $json.body.overall_sat }}",
+            "In a few words, what's driving your current level of satisfaction?": "={{ $json.body.overall_why }}",
+            "What's one thing senior leadership could do better to build trust or improve communication?": "={{ $json.body.leadership_text }}",
+            "Leadership communicates a clear, inspiring vision": "={{ $json.body.leadership_clarity }}",
+            "My manager provides the support and feedback I need to do my job well.": "={{ $json.body.manager_support }}",
+            "Share an example of when you felt well—or poorly—supported by your manager": "={{ $json.body.management_text }}",
+            "My workload is manageable and sustainable.": "={{ $json.body.workload_sustainable }}",
+            "Urgent?": "={{ $json.body.urgent_flag }}",
+            "Reason for urgency": "={{ $json.body.urgent_reason }}",
+            "If you could change one thing about your work experience right now, what would it be and why?": "={{ $json.body.one_change }}",
+            "Consent Preference": "={{ $json.body.consent_anonymized }}",
+            "Summarized Sentiments": "={{ $json.combined_text }}",
+            "Describe any challenges with workload, prioritization, or burnout.": "={{ $json.body.workload_text }}",
+            "Status": "Pending",
+            "ProcessedBy": "HR Tool"
+          },
+          "matchingColumns": [
+            "TimeStamp"
+          ],
+          "schema": [
+            {
+              "id": "TimeStamp",
+              "displayName": "TimeStamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Department",
+              "displayName": "Department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Role Level",
+              "displayName": "Role Level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tenure",
+              "displayName": "Tenure",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "How satisfied are you with your overall work experience?",
+              "displayName": "How satisfied are you with your overall work experience?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "In a few words, what's driving your current level of satisfaction?",
+              "displayName": "In a few words, what's driving your current level of satisfaction?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Leadership communicates a clear, inspiring vision",
+              "displayName": "Leadership communicates a clear, inspiring vision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "What's one thing senior leadership could do better to build trust or improve communication?",
+              "displayName": "What's one thing senior leadership could do better to build trust or improve communication?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "My manager provides the support and feedback I need to do my job well.",
+              "displayName": "My manager provides the support and feedback I need to do my job well.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Share an example of when you felt well—or poorly—supported by your manager",
+              "displayName": "Share an example of when you felt well—or poorly—supported by your manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "My workload is manageable and sustainable.",
+              "displayName": "My workload is manageable and sustainable.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Describe any challenges with workload, prioritization, or burnout.",
+              "displayName": "Describe any challenges with workload, prioritization, or burnout.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Urgent?",
+              "displayName": "Urgent?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reason for urgency",
+              "displayName": "Reason for urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "If you could change one thing about your work experience right now, what would it be and why?",
+              "displayName": "If you could change one thing about your work experience right now, what would it be and why?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Consent Preference",
+              "displayName": "Consent Preference",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summarized Sentiments",
+              "displayName": "Summarized Sentiments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "SentimentConfidence",
+              "displayName": "SentimentConfidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Themes (comma)",
+              "displayName": "Themes (comma)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Subtopics (comma)",
+              "displayName": "Subtopics (comma)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Urgency",
+              "displayName": "Urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "UrgencyTriggers",
+              "displayName": "UrgencyTriggers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ProcessedBy",
+              "displayName": "ProcessedBy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        720,
+        -64
+      ],
+      "id": "2caf4c89-2526-446c-a0d7-5fa48ff681c4",
+      "name": "Append or update row in Survey sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mExhHBAfmKItPSGi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4bb7e31d-062e-45ad-8a11-8965a59ad70d",
+              "leftValue": "={{ $json.output.urgency.urgency }}",
+              "rightValue": "critical",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "36e83b6f-5fc5-4add-a1d4-6dac56e5ecd2",
+              "leftValue": "={{ $json.output.urgency.urgency }}",
+              "rightValue": "high",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "f59843b4-5bea-40ad-a11a-93f4fbe51759",
+              "leftValue": "={{ $json.output.urgency }}",
+              "rightValue": "critical",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "9ccd4f01-5493-47a2-b9f4-a5693ca17142",
+              "leftValue": "={{ $json.output.urgency }}",
+              "rightValue": "high",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1232,
+        64
+      ],
+      "id": "17ccc796-6d13-4fac-8213-5cd824ede306",
+      "name": "Urgent_Action_Condition"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag",
+          "mode": "list",
+          "cachedResultName": "Employee Survey",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Urgency": "={{ $('Sentiments_Theme_Urgency_Detector').item.json.output.urgency }}",
+            "UrgencyTriggers": "={{ $('Sentiments_Theme_Urgency_Detector').item.json.output.triggers }}",
+            "Sentiment": "={{ $('Sentiments_Theme_Urgency_Detector').item.json.output.sentiment }}",
+            "SentimentConfidence": "={{ $('Sentiments_Theme_Urgency_Detector').item.json.output.confidence }}",
+            "TimeStamp": "={{ $('Append or update row in Survey sheet').item.json.TimeStamp }}",
+            "Themes (comma)": "={{ $('Sentiments_Theme_Urgency_Detector').item.json.output.themes }}",
+            "Subtopics (comma)": "={{ $('Sentiments_Theme_Urgency_Detector').item.json.output.subtopics }}"
+          },
+          "matchingColumns": [
+            "TimeStamp"
+          ],
+          "schema": [
+            {
+              "id": "TimeStamp",
+              "displayName": "TimeStamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Department",
+              "displayName": "Department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Role Level",
+              "displayName": "Role Level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tenure",
+              "displayName": "Tenure",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "How satisfied are you with your overall work experience?",
+              "displayName": "How satisfied are you with your overall work experience?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "In a few words, what's driving your current level of satisfaction?",
+              "displayName": "In a few words, what's driving your current level of satisfaction?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Leadership communicates a clear, inspiring vision",
+              "displayName": "Leadership communicates a clear, inspiring vision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "What's one thing senior leadership could do better to build trust or improve communication?",
+              "displayName": "What's one thing senior leadership could do better to build trust or improve communication?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "My manager provides the support and feedback I need to do my job well.",
+              "displayName": "My manager provides the support and feedback I need to do my job well.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Share an example of when you felt well—or poorly—supported by your manager",
+              "displayName": "Share an example of when you felt well—or poorly—supported by your manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "My workload is manageable and sustainable.",
+              "displayName": "My workload is manageable and sustainable.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Describe any challenges with workload, prioritization, or burnout.",
+              "displayName": "Describe any challenges with workload, prioritization, or burnout.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Urgent?",
+              "displayName": "Urgent?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reason for urgency",
+              "displayName": "Reason for urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "If you could change one thing about your work experience right now, what would it be and why?",
+              "displayName": "If you could change one thing about your work experience right now, what would it be and why?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Consent Preference",
+              "displayName": "Consent Preference",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Summarized Sentiments",
+              "displayName": "Summarized Sentiments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SentimentConfidence",
+              "displayName": "SentimentConfidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Themes (comma)",
+              "displayName": "Themes (comma)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subtopics (comma)",
+              "displayName": "Subtopics (comma)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Urgency",
+              "displayName": "Urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UrgencyTriggers",
+              "displayName": "UrgencyTriggers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ProcessedBy",
+              "displayName": "ProcessedBy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1728,
+        80
+      ],
+      "id": "8e37401f-3720-4170-8973-175d07a4c0fa",
+      "name": "Update row in Survey sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mExhHBAfmKItPSGi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/********** Drop-in Function Node: original logic preserved, theme parsing fixed **********/\n\n/************* Config / mappings (UNCHANGED) *************/\nconst SENTIMENT_TO_SCORE = {\n  'very negative': -2,\n  'negative': -1,\n  'neutral': 0,\n  'positive': 1,\n  'very positive': 2,\n};\nconst SENTIMENT_ORDER = ['very negative','negative','neutral','positive','very positive'];\n\nconst FIELD_ALIASES = {\n  timestamp: ['timestamp','TimeStamp'],\n  department: ['department','Department'],\n  role_level: ['role level','Role Level'],\n  location: ['location','Location'],\n  tenure: ['tenure','Tenure'],\n  manager: ['manager','Manager'],\n\n  // Ratings & text\n  overall_sat: [\n    'How satisfied are you with your overall work experience?',\n  ],\n  overall_why: [\n    \"In a few words, what's driving your current level of satisfaction?\",\n  ],\n  leadership_clarity: [\n    'Leadership communicates a clear, inspiring vision',\n  ],\n  leadership_text: [\n    \"What's one thing senior leadership could do better to build trust or improve communication?\",\n  ],\n  manager_support: [\n    'My manager provides the support and feedback I need to do my job well.',\n  ],\n  management_text: [\n    'Share an example of when you felt well—or poorly—supported by your manager',\n  ],\n  workload_sustainable: [\n    'My workload is manageable and sustainable.',\n  ],\n  workload_text: [\n    'Describe any challenges with workload, prioritization, or burnout.',\n  ],\n\n  // Urgency (either checkbox or classifier)\n  urgent_flag: ['Urgent?','Urgent'],\n  urgent_reason: ['Reason for urgency'],\n  urgency: ['Urgency'],\n  urgency_triggers: ['UrgencyTriggers','Urgency Triggers'],\n\n  one_change: [\n    \"If you could change one thing about your work experience right now, what would it be and why?\",\n  ],\n  consent_pref: ['Consent Preference'],\n\n  // LLM outputs written back to sheet\n  summarized_sentiments: ['Summarized Sentiments'],\n  sentiment: ['Sentiment'],\n  sentiment_conf: ['SentimentConfidence'],\n  themes_comma: ['Themes (comma)','Themes'],\n  subtopics_comma: ['Subtopics (comma)','Subtopics'],\n  processed_by: ['ProcessedBy','Processed By'],\n  status: ['Status'],\n};\n\n/************* Helpers (UNCHANGED except themes) *************/\nfunction normKey(k) {\n  if (typeof k !== 'string') return '';\n  let s = k.trim();\n  if ((s.startsWith('\"') && s.endsWith('\"')) || (s.startsWith(\"'\") && s.endsWith(\"'\"))) {\n    s = s.slice(1, -1);\n  }\n  s = s.trim().toLowerCase();\n  s = s.replace(/\\u2013|\\u2014/g, '-');\n  s = s.replace(/\\s+/g, ' ');\n  return s;\n}\n\nfunction buildNormRow(raw) {\n  const map = {};\n  for (const [k, v] of Object.entries(raw)) map[normKey(k)] = v;\n  return map;\n}\n\nfunction pick(normRow, aliases) {\n  for (const a of aliases) {\n    const key = normKey(a);\n    if (Object.prototype.hasOwnProperty.call(normRow, key) && normRow[key] !== '') return normRow[key];\n  }\n  return undefined;\n}\n\nfunction addCount(obj, key) {\n  if (!key) return;\n  obj[key] = (obj[key] || 0) + 1;\n}\n\nfunction asNumberOrNull(v) {\n  const n = Number(v);\n  return Number.isFinite(n) ? n : null;\n}\n\nfunction getSentimentLabel(row) {\n  const s = row.sentiment;\n  if (!s) return undefined;\n  return String(s).toLowerCase().trim();\n}\n\nfunction getSentimentScore(label) {\n  return SENTIMENT_TO_SCORE[label];\n}\n\nfunction isUrgent(row) {\n  const uClass = (row.urgency || '').toString().toLowerCase();\n  if (['critical','high'].includes(uClass)) return true;\n  if (uClass === 'normal') return false;\n  const uFlag = (row.urgent_flag || '').toString().toLowerCase();\n  return ['yes','true','1','y'].includes(uFlag);\n}\n\nfunction bestSnippet(row) {\n  const candidates = [\n    row.overall_why, row.leadership_text, row.management_text,\n    row.workload_text, row.urgent_reason, row.one_change\n  ];\n  for (const t of candidates) {\n    if (typeof t === 'string' && t.trim()) return t.trim();\n  }\n  return '';\n}\n\n/************* THEME HELPERS - SAFE, NON-DESTRUCTIVE FIX *************/\n\n// Extract a meaningful string from a theme element (string or object)\nfunction extractThemeElement(el) {\n  if (el === null || el === undefined) return '';\n  if (typeof el === 'string') return el.trim();\n  if (typeof el === 'number' || typeof el === 'boolean') return String(el);\n  if (typeof el === 'object') {\n    const candidates = ['label', 'name', 'value', 'theme', 'text', 'title'];\n    for (const k of candidates) {\n      if (Object.prototype.hasOwnProperty.call(el, k) && el[k] != null) {\n        const v = el[k];\n        if (typeof v === 'string' && v.trim()) return v.trim();\n        if (typeof v === 'number' || typeof v === 'boolean') return String(v);\n      }\n    }\n    // fallback: first string property\n    for (const key of Object.keys(el)) {\n      const v = el[key];\n      if (typeof v === 'string' && v.trim()) return v.trim();\n      if (typeof v === 'number' || typeof v === 'boolean') return String(v);\n    }\n    try { return JSON.stringify(el); } catch (e) { return ''; }\n  }\n  return '';\n}\n\n// Normalize individual theme to a canonical label\nfunction normalizeTheme(raw) {\n  if (raw === null || raw === undefined) return '';\n  const s = String(raw).trim();\n  if (!s) return '';\n  const key = s.toLowerCase().replace(/[_\\-\\s]+/g, ' ').trim();\n\n  const CANON = {\n    'leadership': 'Leadership',\n    'leaderships': 'Leadership',\n    'ldrshp': 'Leadership',\n    'management': 'Management',\n    'managers': 'Management',\n    'mgmt': 'Management',\n    'workload': 'Workload',\n    'work load': 'Workload',\n    'work-load': 'Workload',\n    'other': 'Other',\n    'culture': 'Culture',\n    'communication': 'Communication',\n    'trust': 'Trust'\n  };\n\n  if (CANON[key]) return CANON[key];\n\n  return key.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');\n}\n\n// Robust parseThemes: handles strings, JSON arrays (of strings or objects), and arrays\nfunction parseThemes(val) {\n  if (!val) return [];\n  let arr = [];\n\n  if (Array.isArray(val)) {\n    arr = val.slice();\n  } else if (typeof val === 'string') {\n    const t = val.trim();\n    if (!t) return [];\n    // Try to parse JSON first (handles '[{\"label\":\"Leadership\"}]' etc.)\n    if (t.startsWith('[') || t.startsWith('{')) {\n      try {\n        const parsed = JSON.parse(t);\n        if (Array.isArray(parsed)) arr = parsed;\n        else if (typeof parsed === 'object' && parsed !== null) arr = [parsed];\n        else arr = [];\n      } catch (e) {\n        // fallback to splitting on delimiters\n        arr = t.split(/[;,]/).map(s => s.trim()).filter(Boolean);\n      }\n    } else {\n      arr = t.split(/[;,]/).map(s => s.trim()).filter(Boolean);\n    }\n  } else {\n    arr = [val];\n  }\n\n  // Convert elements to strings, normalize, dedupe\n  const seen = new Set();\n  const out = [];\n  for (const raw of arr) {\n    const extracted = extractThemeElement(raw);\n    if (!extracted) continue;\n    const normalized = normalizeTheme(extracted);\n    if (!normalized) continue;\n    const key = normalized.toLowerCase();\n    if (!seen.has(key)) {\n      seen.add(key);\n      out.push(normalized);\n    }\n  }\n\n  return out;\n}\n\n/************* Canonicalize (UNCHANGED except parseThemes usage) *************/\nfunction canonicalize(item) {\n  const normRow = buildNormRow(item.json);\n\n  const out = {};\n  for (const [canon, aliases] of Object.entries(FIELD_ALIASES)) {\n    out[canon] = pick(normRow, aliases);\n  }\n\n  out.sentiment = getSentimentLabel({ sentiment: out.sentiment });\n  out.sentiment_conf = asNumberOrNull(out.sentiment_conf);\n  out.themes = parseThemes(out.themes_comma);\n\n  out._isUrgent = isUrgent({ urgency: out.urgency, urgent_flag: out.urgent_flag });\n  out._snippet = bestSnippet(out);\n\n  return out;\n}\n\n/************* Aggregation (UNCHANGED) *************/\nfunction aggregate(inputItems) {\n  const rows = inputItems.map(canonicalize);\n\n  const deptCounts = {};\n  const themeCounts = {};\n  const sentimentCounts = {};\n  const quotesPos = [];\n  const quotesNeg = [];\n\n  let total = 0;\n  let urgentCount = 0;\n  let sumSent = 0;\n  let nSent = 0;\n\n  for (const r of rows) {\n    total++;\n\n    addCount(deptCounts, r.department);\n\n    for (const t of r.themes) addCount(themeCounts, t);\n\n    const sLabel = r.sentiment;\n    if (sLabel) addCount(sentimentCounts, sLabel);\n\n    const sScore = getSentimentScore(sLabel);\n    if (Number.isFinite(sScore)) { sumSent += sScore; nSent++; }\n\n    if (r._isUrgent) urgentCount++;\n\n    const text = r._snippet;\n    const conf = asNumberOrNull(r.sentiment_conf) ?? 0;\n\n    if (text && Number.isFinite(sScore)) {\n      const base = { text, confidence: conf, dept: r.department, themes: r.themes };\n      if (sScore > 0) quotesPos.push(base);\n      if (sScore < 0) quotesNeg.push(base);\n    }\n  }\n\n  const avgSent = nSent ? (sumSent / nSent) : null;\n  const urgentRate = total ? urgentCount / total : 0;\n\n  quotesPos.sort((a,b)=> (b.confidence - a.confidence) || (b.text.length - a.text.length));\n  quotesNeg.sort((a,b)=> (b.confidence - a.confidence) || (b.text.length - a.text.length));\n  const topPositive = quotesPos.slice(0,5);\n  const topNegative = quotesNeg.slice(0,5);\n\n  const reps = [];\n  const maxReps = 10;\n  let i = 0;\n  while (reps.length < maxReps && (i < quotesPos.length || i < quotesNeg.length)) {\n    if (i < quotesPos.length) reps.push({ ...quotesPos[i], polarity: 'positive' });\n    if (reps.length >= maxReps) break;\n    if (i < quotesNeg.length) reps.push({ ...quotesNeg[i], polarity: 'negative' });\n    i++;\n  }\n\n  const sentimentDistribution = {};\n  for (const label of SENTIMENT_ORDER) sentimentDistribution[label] = sentimentCounts[label] || 0;\n\n  return {\n    total_responses: total,\n    avg_sentiment_score: avgSent,           // -2..+2 (map to 1..5 if desired)\n    sentiment_distribution: sentimentDistribution,\n    urgent_count: urgentCount,\n    urgent_rate: urgentRate,                // 0..1\n    department_counts: deptCounts,\n    theme_counts: themeCounts,\n    top_positive_quotes: topPositive,\n    top_negative_quotes: topNegative,\n    representative_snippets: reps,\n  };\n}\n\n/************* MAIN (Function node) *************/\n\n// Defensive: if items is empty, return valid zeroed period\ntry {\n  const period = aggregate(items || []);\n  return [{ json: { period, trend: null, generated_at: new Date().toISOString() } }];\n} catch (err) {\n  // On unexpected error still return an item so n8n doesn't break\n  return [{ json: { period: { total_responses: 0, avg_sentiment_score: null, sentiment_distribution: {}, urgent_count: 0, urgent_rate: 0, department_counts: {}, theme_counts: {}, top_positive_quotes: [], top_negative_quotes: [], representative_snippets: [] }, error: String(err), generated_at: new Date().toISOString() } }];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        80
+      ],
+      "id": "954d32e1-cfc1-4d26-a6a7-38df3d7ae2e0",
+      "name": "Input_Aggregator"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag",
+          "mode": "list",
+          "cachedResultName": "Employee Survey",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "Pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2176,
+        80
+      ],
+      "id": "7f1d8185-7d55-4b74-bd2f-1b46d1423262",
+      "name": "Get_unprocessed_survey_input",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mExhHBAfmKItPSGi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following employee feedback dataset and produce the structured JSON output (executive_summary, overview, key_metrics, etc.) per the schema.\n\nData (JSON):\n{{ JSON.stringify($items(\"Input_Aggregator\")[0].json.period) }}\n\nInstructions:\n- Compute/confirm total_responses, average sentiment (0–1), sentiment_distribution, urgent_count and urgent_rate (0–1).\n- Convert department_counts into a department_participation map.\n- Normalize theme names (case-insensitive) and produce top_positive_themes and top_friction_points arrays.\n- Extract notable_quotes with keys { \"quote\", \"department\" } only.\n- Produce a short executive_summary (2–4 sentences) suitable for leadership, concise and data-driven.\n- Expantiate on the top friction points.\n- Output must be valid JSON matching the schema exactly—no extra text.\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert AI business analyst producing executive summaries for leadership visibility.\nYour goal is to analyze structured employee feedback data and return a concise, business-ready summary in strict JSON format. \nExpantiate on the top friction points.\nYou must strictly conform to the provided schema and generate no text outside the JSON.\nWrite the executive_summary as if it were going into a quarterly leadership report — professional, insightful, and data-grounded.\nWhen quantifying insights, keep them consistent with the data.\nAvoid conversational language.\nOutput only valid JSON matching the schema — no markdown, no commentary."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        2592,
+        80
+      ],
+      "id": "81afae34-ecc8-4d4c-88b4-c98df4255130",
+      "name": "Executive_Summary_Writer",
+      "alwaysOutputData": true,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "sendTo": "talktobody@gmail.com",
+        "subject": "Employee Survey Executive Summary",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\" />\n  <style>\n    body {\n      font-family: 'Segoe UI', Arial, sans-serif;\n      color: #333;\n      line-height: 1.7;\n      margin: 0;\n      padding: 0;\n      background: #f5f7fa;\n      font-size: 16px;\n    }\n    .container {\n      max-width: 760px;\n      margin: 40px auto;\n      padding: 35px 40px;\n      background: #fff;\n      border-radius: 12px;\n      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);\n    }\n    h1 {\n      color: #1b5e20;\n      border-bottom: 3px solid #81c784;\n      padding-bottom: 10px;\n      margin-bottom: 25px;\n      font-size: 24px;\n    }\n    h2 {\n      color: #2e7d32;\n      border-bottom: 1px solid #c8e6c9;\n      padding-bottom: 6px;\n      margin-top: 30px;\n      font-size: 19px;\n    }\n    p {\n      margin: 12px 0;\n    }\n    ul, ol {\n      margin: 12px 0 12px 28px;\n      padding: 0;\n    }\n    li {\n      margin: 7px 0;\n    }\n    .quote {\n      font-style: italic;\n      background: #f1f8e9;\n      border-left: 4px solid #81c784;\n      padding: 12px 18px;\n      margin: 12px 0;\n      border-radius: 6px;\n    }\n    .metric-list strong {\n      color: #1b5e20;\n    }\n    .footer {\n      font-size: 14px;\n      color: #777;\n      margin-top: 40px;\n      text-align: center;\n      border-top: 1px solid #eee;\n      padding-top: 14px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n\n    <h1>Quarterly Employee Feedback — Q4</h1>\n\n    <p>{{ $json.output.executive_summary }}</p>\n\n    <h2>Overview</h2>\n    <p>{{ $json.output.overview }}</p>\n\n    <h2>Key Metrics</h2>\n    <ul class=\"metric-list\">\n      <li><strong>Total Responses:</strong> {{ $json.output.key_metrics.total_responses }}</li>\n      <li><strong>Average Sentiment Score:</strong> {{ $json.output.key_metrics.average_sentiment_score }}</li>\n      <li><strong>Urgent Issue Count:</strong> {{ $json.output.key_metrics.urgent_issue_count }}</li>\n      <li><strong>Department Participation:</strong> {{ $json.output.key_metrics.department_participation }}</li>\n      <li style=\"margin-top:10px;\"><strong>Sentiment Distribution:</strong>\n        <ul>\n          <li>Very Positive: {{ $json.output.key_metrics.sentiment_distribution.very_positive }}</li>\n          <li>Positive: {{ $json.output.key_metrics.sentiment_distribution.positive }}</li>\n          <li>Neutral: {{ $json.output.key_metrics.sentiment_distribution.neutral }}</li>\n          <li>Negative: {{ $json.output.key_metrics.sentiment_distribution.negative }}</li>\n          <li>Very Negative: {{ $json.output.key_metrics.sentiment_distribution.very_negative }}</li>\n        </ul>\n      </li>\n    </ul>\n\n    <h2>Top Positive Themes</h2>\n    <ul>\n      {{ $json.output.top_positive_themes.map(t => `<li>${t}</li>`).join('') }}\n    </ul>\n\n    <h2>Top Friction Points</h2>\n    <ul>\n      {{ $json.output.top_friction_points.map(t => `<li>${t}</li>`).join('') }}\n    </ul>\n\n    <h2>Urgent Issues</h2>\n    <p>{{ $json.output.urgent_issues }}</p>\n\n    <h2>Suggested Actions (Next Quarter)</h2>\n    <ol>\n      {{ $json.output.suggested_actions_next_quarter.map(a => `<li>${a}</li>`).join('') }}\n    </ol>\n\n    <h2>Notable Quotes (Anonymized)</h2>\n    {{ $json.output.notable_quotes.map(q => `<div class=\"quote\">\"${q.quote}\" — <strong>${q.dept}</strong></div>`).join('') }}\n\n    <h2>Conclusion</h2>\n    <p>{{ $json.output.conclusion }}</p>\n\n    <div class=\"footer\">\n      Sentiment Insights Report • Generated {{ $now.toISODate() }}\n    </div>\n  </div>\n</body>\n</html>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2928,
+        80
+      ],
+      "id": "3e878a6d-703f-49ca-bfd1-f047101aa010",
+      "name": "Send Executive Summary",
+      "webhookId": "4ea67de6-4cd7-4c95-923b-54a11ccbd12b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "i3mXcFvGv7fazVhY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag",
+          "mode": "list",
+          "cachedResultName": "Employee Survey",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Processed",
+            "TimeStamp": "={{ $json.TimeStamp }}"
+          },
+          "matchingColumns": [
+            "TimeStamp"
+          ],
+          "schema": [
+            {
+              "id": "TimeStamp",
+              "displayName": "TimeStamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Department",
+              "displayName": "Department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Role Level",
+              "displayName": "Role Level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tenure",
+              "displayName": "Tenure",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "How satisfied are you with your overall work experience?",
+              "displayName": "How satisfied are you with your overall work experience?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "In a few words, what's driving your current level of satisfaction?",
+              "displayName": "In a few words, what's driving your current level of satisfaction?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Leadership communicates a clear, inspiring vision",
+              "displayName": "Leadership communicates a clear, inspiring vision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "What's one thing senior leadership could do better to build trust or improve communication?",
+              "displayName": "What's one thing senior leadership could do better to build trust or improve communication?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "My manager provides the support and feedback I need to do my job well.",
+              "displayName": "My manager provides the support and feedback I need to do my job well.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Share an example of when you felt well—or poorly—supported by your manager",
+              "displayName": "Share an example of when you felt well—or poorly—supported by your manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "My workload is manageable and sustainable.",
+              "displayName": "My workload is manageable and sustainable.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Describe any challenges with workload, prioritization, or burnout.",
+              "displayName": "Describe any challenges with workload, prioritization, or burnout.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Urgent?",
+              "displayName": "Urgent?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reason for urgency",
+              "displayName": "Reason for urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "If you could change one thing about your work experience right now, what would it be and why?",
+              "displayName": "If you could change one thing about your work experience right now, what would it be and why?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Consent Preference",
+              "displayName": "Consent Preference",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Summarized Sentiments",
+              "displayName": "Summarized Sentiments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "SentimentConfidence",
+              "displayName": "SentimentConfidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Themes (comma)",
+              "displayName": "Themes (comma)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Subtopics (comma)",
+              "displayName": "Subtopics (comma)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Urgency",
+              "displayName": "Urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "UrgencyTriggers",
+              "displayName": "UrgencyTriggers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ProcessedBy",
+              "displayName": "ProcessedBy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3360,
+        80
+      ],
+      "id": "e2ce90e5-6bc9-4519-a0ea-502bbee1ccbc",
+      "name": "Update_Processed_Survey_Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mExhHBAfmKItPSGi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "talktobody@gmail.com",
+        "subject": "Urgent!! HR Action Required on Employee Survey",
+        "emailType": "text",
+        "message": "=Dear Sir/Ma,  \n\nAn employee survey requiring your urgent attention has been forwarded to you for review. See employee concerns below:\n\n\"{{ $('Append or update row in Survey sheet').item.json[\"Summarized Sentiments\"] }}\"\n\nPlease give it immediate attention.\n\nHR Tool",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1472,
+        -48
+      ],
+      "id": "28581afb-a023-4f96-8d31-c36ea2c97f0e",
+      "name": "Send Urgent message to HR",
+      "webhookId": "d6ba3ea9-13eb-4185-b75f-f6c228e8962a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "i3mXcFvGv7fazVhY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Inputs: \nSentiments: {{ $json[\"Summarized Sentiments\"] }}\nUrgent: {{ $json[\"Urgent?\"] }}\nReason for urgency: {{ $json[\"Reason for urgency\"] }}\n\nTask: Parse the input and return a single JSON object that exactly matches this structure and types:\n\n{\n  \"output\": {\n    \"sentiment\": {\n      \"sentiment\": \"<string: one of 'positive','neutral','negative'>\",\n      \"confidence\": <number between 0.0 and 1.0>,\n      \"rationale\": \"<string>\"\n    },\n    \"themes\": [\n      { \"title\": \"<string>\" }\n      // repeated for each theme\n    ],\n    \"subtopics\": [\n      [ \"<string>\", ... ],  // list of subtopic strings for theme 1 (may be empty array)\n      [ \"<string>\", ... ],  // list for theme 2\n      ...\n    ],\n    \"urgency\": {\n      \"urgency\": \"<string: e.g. 'high','normal','none'>\",\n      \"triggers\": [ \"<string>\", ... ]\n    }\n  }\n}\n\nExtraction rules:\n1. `output.sentiment.sentiment`: infer primary sentiment from numeric score(s) if present (use numeric->label mapping: >=9 => 'positive', 7-8 => 'positive', 5-6 => 'neutral', 3-4 => 'negative', <=2 => 'negative'). If only a text label exists, use that label (normalized to 'positive','neutral','negative'). If unknown, set to \"\" (empty string).\n2. `output.sentiment.confidence`: a number between 0 and 1 representing confidence. If the input contains a numeric confidence, normalize it to 0–1. If none present, provide 0.0.\n3. `output.sentiment.rationale`: one short sentence explaining the basis (do NOT include quotes or extra punctuation).\n4. `output.themes`: extract up to the main themes (objects with title only). Titles must be short strings (e.g., \"Leadership\", \"Workload\"). If none, return an empty array [].\n5. `output.subtopics`: must be an array with the same length as `themes`. Each entry is an array of strings representing the subtopics for the corresponding theme. If there are no subtopics for a theme, include an empty array `[]` in that position.\n6. `output.urgency.urgency`: set to 'high','normal', or 'none' based on urgent flags in the input. If uncertain, use 'none'.\n7. `output.urgency.triggers`: list of trigger phrases (strings). If none, return an empty array [].\n8. If multiple inputs are present, aggregate them using these rules and produce a single JSON object summarizing the whole batch.\n9. Return EXACTLY the JSON and no additional text.\n\nNow parse the input and return only the JSON.\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an automated data-extraction engine. You MUST return exactly one valid JSON value — nothing else (no explanatory text, no markdown, no code fences). The JSON must strictly match the schema shown in the User prompt and the separate format/schema provided to the system. Do NOT add, rename, or remove top-level keys.\n\nRules:\n- Return only JSON. If a field is unknown, use the exact empty form required by the schema (empty arrays [], empty object {}, or appropriate nulls).\n- All arrays must declare items in the schema and the output must obey those types (e.g., themes -> array of objects with title string).\n- Numeric confidences must be numbers (not strings) between 0.0 and 1.0.\n- Text fields must be plain strings (escape any user content for safety).\n- When asked to extract values, use the provided input (User message). Do not invent data.\n- Keep output compact and machine-parseable.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        896,
+        144
+      ],
+      "id": "2aa2c021-47e1-4c86-90b8-295452b65386",
+      "name": "Sentiments_Theme_Urgency_Detector",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag",
+          "mode": "list",
+          "cachedResultName": "Employee Survey",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ieeSPwkb0Xb6Y4mMEwmqljUo944nmsjRfxe_cD72Iag/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "Pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3136,
+        80
+      ],
+      "id": "18f400f9-dda8-4098-bd19-d53ee8893810",
+      "name": "Get_unprocessed_survey2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mExhHBAfmKItPSGi",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sentiments_Theme_Urgency_Detector",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get_unprocessed_survey_input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Executive_Summary_Writer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Sentiments_Theme_Urgency_Detector",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Executive_Summary_Writer",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form_Webhook": {
+      "main": [
+        [
+          {
+            "node": "Combine_Texts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine_Texts": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in Survey sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in Survey sheet": {
+      "main": [
+        [
+          {
+            "node": "Sentiments_Theme_Urgency_Detector",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Urgent_Action_Condition": {
+      "main": [
+        [
+          {
+            "node": "Send Urgent message to HR",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update row in Survey sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in Survey sheet": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input_Aggregator": {
+      "main": [
+        [
+          {
+            "node": "Executive_Summary_Writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get_unprocessed_survey_input": {
+      "main": [
+        [
+          {
+            "node": "Input_Aggregator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Executive_Summary_Writer": {
+      "main": [
+        [
+          {
+            "node": "Send Executive Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Executive Summary": {
+      "main": [
+        [
+          {
+            "node": "Get_unprocessed_survey2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update_Processed_Survey_Sheet": {
+      "main": [
+        []
+      ]
+    },
+    "Send Urgent message to HR": {
+      "main": [
+        [
+          {
+            "node": "Update row in Survey sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sentiments_Theme_Urgency_Detector": {
+      "main": [
+        [
+          {
+            "node": "Urgent_Action_Condition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get_unprocessed_survey2": {
+      "main": [
+        [
+          {
+            "node": "Update_Processed_Survey_Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2a17b08d-2568-4a6a-9ceb-8ee4b94eb291",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "68788150d3fc918645c9eed9de01dbbca37eeaf997f60a901135c5b5d1fb3bf5"
+  },
+  "id": "obkkaKKlzLw9Oj88",
+  "tags": []
+}
