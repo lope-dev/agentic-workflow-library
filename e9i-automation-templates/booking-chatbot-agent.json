@@ -1,0 +1,364 @@
+{
+  "name": "Booking Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "f1573ed1-9872-45e7-a375-6b81100672c9",
+      "name": "When Chat Message Received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1296,
+        -128
+      ],
+      "webhookId": "b213e8b6-ece5-4441-9e6d-5b687e28143f"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "242cea73-1801-479e-9d88-1c9bc64f9bfa",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1520,
+        96
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "YDXd65OsllrtIZzk",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "c18d24a7-8f59-4771-8f66-371b186cf7da",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.2,
+      "position": [
+        1648,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are the 'Digital First Mate' — a warm, knowledgeable, and professional sales concierge for a premium Yacht Brokerage on the Chesapeake Bay.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🗣️ CONVERSATION RULE — READ THIS FIRST\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nYou are a CONVERSATIONAL assistant. Your FIRST job is always to ANSWER THE CLIENT'S QUESTION fully and helpfully before steering toward a booking.\n\nExamples of how to behave:\n• Client says: \"Hi, I'm looking for a yacht with a shallow draft for the Eastern Shore.\"\n  → Answer thoroughly: explain which hull types suit shallow Chesapeake waters, mention draft depths, tidal flats, etc. Then naturally invite them to come see options in person.\n• Client says: \"What's the difference between a sloop and a ketch?\"\n  → Explain clearly and engagingly. Do NOT immediately jump to booking.\n• Client says: \"I'd like to book a tour\" or \"Can I come see the boats?\"\n  → NOW you move into booking flow.\n\nNEVER skip answering a question to push a booking. Clients who feel heard buy. Clients who feel sold to leave.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⚓ MARITIME EXPERTISE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Chesapeake Bay context: tidal flats, shoal-draft sailboats, power cruisers for the Bay's chop, crabbing skiffs, trawlers for the ICW.\n- Know your stuff: draft, beam, LOA, displacement, sail area, engine hours, wet slip vs. dry storage.\n- Recommend boats suited to the client's stated needs (shallow water = shoal keel or centerboard, family use = cockpit space and safety rails, liveaboard = headroom and tankage, etc.).\n\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📅 BOOKING FLOW\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nYou have 6 tools — use them in the right sequence:\n\ncheck_availability → book_tour → send_email\nfind_booking → update_booking → send_email  \nfind_booking → delete_booking → send_email\n\nBOOKING STEPS:\n1. Answer the client's question(s) first\n2. When they show interest in visiting, invite them to book\n3. Collect: full name → email → preferred date → preferred time → boat interest\n4. Call check_availability with their date; share the open slots\n5. Agree on a slot, then confirm out loud: 'I'll book you in for [date] at [time] — shall I go ahead?'\n6. Wait for their yes, then call book_tour\n7. Call send_email with a warm confirmation message\n\nRESCHEDULE STEPS:\n1. Collect their email and new preferred date/time\n2. Call check_availability for the new date\n3. Confirm the slot, then call find_booking to get their eventId\n4. Call update_booking with the eventId + new date/time\n5. Call send_email with a reschedule confirmation\n\nCANCEL STEPS:\n1. Ask: 'Just to confirm — you would like to cancel your upcoming tour?'\n2. Wait for explicit yes\n3. Call find_booking to get their eventId\n4. Call delete_booking with the eventId\n5. Call send_email with a warm cancellation note\n6. Invite them to rebook whenever they are ready\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🧭 TONE & MEMORY\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nRemember the client's name, email, and interests across the conversation.\nWarm, expert, unhurried. Light nautical flavour, not overdone.\nNatural prose. End each reply with a gentle open question."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1904,
+        -128
+      ],
+      "id": "aebd9535-36ca-443e-ae57-7ac19c086557",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/calendar/v3/calendars/{{ encodeURIComponent('lope.devtestacct@gmail.com') }}/events",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleCalendarOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', `By model and it's required`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1776,
+        96
+      ],
+      "id": "00672b09-ecbd-4da3-870b-2ef7e4ca296a",
+      "name": "Tool: Check Availability",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EWgTk0m0w9BHvvjz",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/calendar/v3/calendars/{{ encodeURIComponent('lope.devtestacct@gmail.com') }}/events",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleCalendarOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{  JSON.stringify({   \"summary\": \"Dock-Side Yacht Tour - \" + $fromAI('clientName', 'Client full name', 'string'),   \"description\": \"Client: \" + $fromAI('clientName', 'Client full name', 'string') + \"\\nEmail: \" + $fromAI('clientEmail', 'Client email', 'string') + \"\\nBoat Interest: \" + $fromAI('boatInterest', 'Boat of interest', 'string'),   \"start\": {     \"dateTime\": $fromAI('tourDate', 'Tour date YYYY-MM-DD', 'string') + \"T\" + $fromAI('tourTime', 'Tour start time HH:MM 24h', 'string') + \":00\",     \"timeZone\": \"America/New_York\"   },   \"end\": {     \"dateTime\": $fromAI('tourDate', 'Tour date YYYY-MM-DD', 'string') + \"T\" + (parseInt($fromAI('tourTime', 'Tour start time HH:MM 24h', 'string').split(':')[0]) + 1).toString().padStart(2, '0') + \":\" + $fromAI('tourTime', 'Tour start time HH:MM 24h', 'string').split(':')[1] + \":00\",     \"timeZone\": \"America/New_York\"   },   \"attendees\": [{     \"email\": $fromAI('clientEmail', 'Client email', 'string')   }],   \"sendUpdates\": \"all\" })  }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1904,
+        96
+      ],
+      "id": "7b6168d0-032b-4b8a-9555-39e7f7abe098",
+      "name": "Tool: Book Tour",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EWgTk0m0w9BHvvjz",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        2032,
+        96
+      ],
+      "id": "db3c8ce2-0a54-4e8d-bb56-c1b71a7a4cc3",
+      "name": "Send a message in Gmail",
+      "webhookId": "7c3460cc-94c4-43e9-8dd3-b70aa0779ea8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NjqOtGTrc2NcDocc",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/calendar/v3/calendars/{{ encodeURIComponent('lope.devtestacct@gmail.com') }}/events",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleCalendarOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        2160,
+        96
+      ],
+      "id": "28857260-95cc-4a13-9abf-4711776f3ce6",
+      "name": "Find Booking",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EWgTk0m0w9BHvvjz",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://www.googleapis.com/calendar/v3/calendars/{{ encodeURIComponent('lope.devtestacct@gmail.com') }}/events/{{ /*n8n-auto-generated-fromAI-override*/ $fromAI('eventId', 'The Google Calendar event ID from find_booking', 'string')",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleCalendarOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        2288,
+        96
+      ],
+      "id": "5bfc36af-04b9-4aea-83a3-012797abef3d",
+      "name": "Delete Booking",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EWgTk0m0w9BHvvjz",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://www.googleapis.com/calendar/v3/calendars/{{ encodeURIComponent('lope.devtestacct@gmail.com') }}/events/{{ /*n8n-auto-generated-fromAI-override*/ $fromAI('eventId', 'The Google Calendar event ID from find_booking', 'string') }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleCalendarOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ \nJSON.stringify({\n  \"start\": {\n    \"dateTime\": $fromAI('newDate', 'New tour date YYYY-MM-DD', 'string') + \"T\" + $fromAI('newTime', 'New tour start time HH:MM 24h', 'string') + \":00\",\n    \"timeZone\": \"America/New_York\"\n  },\n  \"end\": {\n    \"dateTime\": $fromAI('newDate', 'New tour date YYYY-MM-DD', 'string') + \"T\" + (parseInt($fromAI('newTime', 'New tour start time HH:MM 24h', 'string').split(':')[0]) + 1).toString().padStart(2, '0') + \":\" + $fromAI('newTime', 'New tour start time HH:MM 24h', 'string').split(':')[1] + \":00\",\n    \"timeZone\": \"America/New_York\"\n  },\n  \"sendUpdates\": \"all\"\n}) \n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        2416,
+        96
+      ],
+      "id": "e5a383fd-bfec-4481-921f-a26cd7fea5dd",
+      "name": "Update Booking",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EWgTk0m0w9BHvvjz",
+          "name": "Google Calendar account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Chat Message Received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Check Availability": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Book Tour": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Booking": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Booking": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Booking": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a313c589-e160-402a-bffd-14ff85c573fc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "05ef9ef9117a5234413eaaaf5ebca5ef583f91e1fc61464904891935204909c7"
+  },
+  "id": "buLilrgnadYTU5bA",
+  "tags": []
+}
