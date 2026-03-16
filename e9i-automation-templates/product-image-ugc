@@ -1,0 +1,824 @@
+{
+  "name": "Product Image UGC",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        192
+      ],
+      "id": "ad50a11c-7af6-450b-b59b-672b15d18d4f",
+      "name": "When clicking ‘Execute workflow’",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "content": "🍌 NanoBanana UGC Workflow\nAutomatically generates lifestyle model images + UGC videos for every product in your data table.\nFlow: Fetch unprocessed rows → Download product image → Build scene prompt (GPT-4o) → Generate model image (Gemini) → Generate video description (GPT-4o) → Generate video (Veo3)\nRuns 2 products in parallel. Skips already-processed rows automatically.\nData Table columns required:\nproductName · productimgUrl · productPrice · currency · platform\nCredentials needed:\n🔑 Nano_Banana_Gemini_Account — Gemini image + Veo3\n🔑 OpenAi account — GPT-4o prompt + video description\n🔑 Google account — OAuth for Vertex AI",
+        "height": 576,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -624,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "300328b4-40df-4005-a689-30d7ea000bcb",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "batchSize": 2,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        448,
+        192
+      ],
+      "id": "6ba19d75-f44d-4a68-a65e-d800cd41348f",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Loop Over Items').item.json.productimgUrl }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        128
+      ],
+      "id": "7a905340-2fe5-4e45-9947-68dab47ace8c",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "information"
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        896,
+        48
+      ],
+      "id": "1db78123-8d69-4b30-8e30-11a176d79cbf",
+      "name": "Get Resolution"
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\n\nfor (const item of items) {\n  const origWidth = item.json.size.width;\n  const origHeight = item.json.size.height;\n\n  const bgHeight = origHeight;\n  const bgWidth = Math.round((16 / 9) * bgHeight);\n\n  const positionX = Math.round((bgWidth - origWidth) / 2);\n  const positionY = 0;\n\n  results.push({\n    json: {\n      backgroundWidth: bgWidth,\n      backgroundHeight: bgHeight,\n      positionX,\n      positionY,\n    },\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        48
+      ],
+      "id": "412ce0d5-6300-4b17-b7d5-cb0b3b2cb54d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "dataPropertyName": "image",
+        "width": "={{ $json.backgroundWidth }}",
+        "height": "={{ $json.backgroundHeight }}",
+        "options": {
+          "format": "jpeg",
+          "quality": 80
+        }
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        48
+      ],
+      "id": "ddc4c414-8fbe-41eb-a2ee-cfb4d0cae67a",
+      "name": "Edit Image"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1568,
+        128
+      ],
+      "id": "348a876f-264e-4817-95f0-a1be0d8e203e",
+      "name": "Merge",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "composite",
+        "dataPropertyName": "image",
+        "dataPropertyNameComposite": "data",
+        "positionX": "={{ $json.positionX }}",
+        "positionY": "={{ $json.positionY }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        128
+      ],
+      "id": "7b969d95-b6fa-4faf-ad5b-39da0f328332",
+      "name": "Edit Image1"
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "binaryPropertyName": "image",
+        "destinationKey": "editedimage",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        2016,
+        128
+      ],
+      "id": "3ba3263f-1e20-40ac-bc38-452129cd2441",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "=**ROLE:** You are an elite UGC Prompt Engineer specializing in authentic lifestyle photography for social commerce. Analyze the product image and generate a single, production-ready image generation prompt.\n\n**PLATFORM TARGET:** {{ $json.platform }}\n**PRODUCT:** {{ $json.productName }}\n\n---\n\n**DIVERSITY & INCLUSIVITY (randomize on every generation):**\nSelect ONE combination at random:\n- Gender: male / female / non-binary / gender-fluid\n- Age range: 18–25 / 26–35 / 36–45\n- Ethnicity: Black / Brown / East Asian / South Asian / White / Latina / Middle Eastern / Mixed\n- Body type: slim / athletic / curvy / plus-size / petite\n- Optional (10% chance): include a visible disability naturally (stylish prosthetic, sleek modern wheelchair, hearing aid as accessory)\n\nNever describe the person as a \"model.\" Use real-person language: \"a young woman,\" \"a guy,\" \"a person,\" etc.\n\n---\n\n**PHOTOGRAPHY RULES (non-negotiable):**\n- NO studio lighting. Choose: natural window light / golden hour / overcast soft daylight / blue-hour ambient\n- CAMERA: iPhone 16 Pro Max or high-end mirrorless (Sony A7, Fujifilm X100)\n- AESTHETIC: slightly soft focus · natural film grain · imperfect framing · real-world color cast\n\n---\n\n**PLATFORM-SPECIFIC FRAMING:**\n- TikTok / Instagram Reels: vertical 9:16, waist-up or three-quarter shot, energetic background\n- YouTube Shorts: vertical 9:16, slightly wider, clean background works\n- Instagram Feed: square or portrait, editorial feel, lifestyle background\n- Pinterest: tall portrait, aspirational lifestyle setting\nDefault to vertical 9:16 if platform is unspecified.\n\n---\n\n**OUTPUT FORMAT (follow exactly, output only this):**\nA [age+gender+ethnicity] [wearing/holding] [precise product description: color · texture · pattern · cut · key details]. [Candid natural action in 1 sentence]. [Setting in 1 sentence: specific location, time of day, mood]. [Lighting in 1 sentence]. Shot on [camera] — [3 technical descriptors: e.g., soft bokeh, natural grain, warm white balance]. Feels like [1 authentic comparison, e.g., \"a friend captured a quick mirror check\"].\n\n---\n\n**QUALITY GATES — before outputting, verify:**\n✓ Product details are specific (not generic)\n✓ Person feels real, not like a stock photo subject\n✓ Setting is vivid and grounded\n✓ No studio / no perfection / no filters mentioned\n\nOutput ONLY the prompt text. No preamble, no labels, no explanation.",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        2464,
+        128
+      ],
+      "id": "f7d275ff-ca63-414f-ac1e-295379783f96",
+      "name": "Create NanoBanana Prompt",
+      "credentials": {
+        "openAiApi": {
+          "id": "YDXd65OsllrtIZzk",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "Sbx3AmEpeqOGUDoU",
+          "mode": "list",
+          "cachedResultName": "Product Images Urls",
+          "cachedResultUrl": "/projects/4UWOE2XdTPKMSq4h/datatables/Sbx3AmEpeqOGUDoU"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "productName",
+              "keyValue": "={{ $('Get Product Image Urls').item.json.productName }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nanobananaPrompt": "={{ $json['0'].content[0].text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "productName",
+              "displayName": "productName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "productimgUrl",
+              "displayName": "productimgUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "productPrice",
+              "displayName": "productPrice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "nanobananaPrompt",
+              "displayName": "nanobananaPrompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "veo3Prompt",
+              "displayName": "veo3Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "finalVideoPrompt",
+              "displayName": "finalVideoPrompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2688,
+        128
+      ],
+      "id": "d89bc7e5-71f2-4c68-bcfc-a5cbea54fb7f",
+      "name": "Update row(s)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"text\": \"You are a fashion lifestyle photographer. Generate a PHOTOREALISTIC lifestyle image of a model wearing the EXACT garment shown in the REFERENCE IMAGE below.\\n\\n=== SCENE DESCRIPTION ===\\n{{ $json.nanobananaPrompt }}\\n\\n=== MANDATORY GARMENT PRESERVATION (NON-NEGOTIABLE) ===\\n- The garment MUST be visually IDENTICAL to the reference image: same exact color, pattern, cut, silhouette, fabric texture, print, brand details, and proportions.\\n- Do NOT alter, redesign, reinterpret, simplify, or enhance ANY visual aspect of the garment.\\n- Treat the reference garment image as absolute ground truth.\\n- Full garment visible from neckline to hem — no cropping.\\n- Natural body posture, subtle sway, no dramatic posing.\\n- Authentic handheld iPhone photography: natural window lighting, slight depth-of-field, no studio flash, natural grain.\"\n        },\n        {\n          \"text\": \"REFERENCE GARMENT (reproduce this garment EXACTLY on the model):\"\n        },\n        {\n          \"inlineData\": {\n            \"mimeType\": \"image/jpeg\",\n            \"data\": \"{{ $('Extract from File').item.json.editedimage }}\"\n          }\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"responseModalities\": [\"IMAGE\", \"TEXT\"],\n    \"temperature\": 0.3,\n    \"topP\": 0.8\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3120,
+        48
+      ],
+      "id": "46062c13-0946-4908-b4ca-165cfc91473f",
+      "name": "Generate an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "fcE4BtMv8iq9Mr5T",
+          "name": "Nano_Banana_Gemini_Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "Sbx3AmEpeqOGUDoU",
+          "mode": "list",
+          "cachedResultName": "Product Images Urls",
+          "cachedResultUrl": "/projects/4UWOE2XdTPKMSq4h/datatables/Sbx3AmEpeqOGUDoU"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "finalVideoPrompt"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        192
+      ],
+      "id": "3e520dda-1a80-40b6-b5a4-5af34edba97e",
+      "name": "Get Product Image Urls",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "=You are a senior UGC video director. You have been given a GENERATED LIFESTYLE IMAGE showing a real person wearing a specific product in a specific setting. Your job is to write a production-ready description of a 30-second vertical video that ANIMATES this exact image into motion.\n\n---\nCRITICAL — READ THE IMAGE FIRST:\nThe attached image is the reference frame for the entire video. The person in this image, wearing this exact outfit, in this exact setting, IS the video. Do not invent a new model, new location, or new outfit. Describe this specific person coming to life and moving naturally within this specific scene.\n\n---\nINPUTS:\n- Platform: {{ $json.platform }}\n- Product: {{ $json.productName }}\n- Price: {{ $json.formattedPrice }}\n- Original scene brief: {{ $('Create NanoBanana Prompt').all()[$itemIndex].json}}\nYou are a senior UGC video director. You have been given a GENERATED LIFESTYLE IMAGE showing a real person wearing a specific product in a specific setting. Your job is to write a production-ready description of a 30-second vertical video that ANIMATES this exact image into motion.\n\n---\nCRITICAL — READ THE IMAGE FIRST:\nThe attached image is the reference frame for the entire video. The person in this image, wearing this exact outfit, in this exact setting, IS the video. Do not invent a new model, new location, or new outfit. Describe this specific person coming to life and moving naturally within this specific scene.\n\n---\nINPUTS:\n- Platform: {{ $json.platform }}\n- Product: {{ $json.productName }}\n- Price: {{ $json.formattedPrice }}\n- Original scene brief:{{ $('Create NanoBanana Prompt').item.json['0'].content[0].text }} \n\n---\nTASK:\nDescribe the 30-second video as if it already exists and you are watching it back. Write in present tense. One continuous paragraph, 200–280 words. No bullet points. No rules. No meta-commentary.\n\n---\nPLATFORM-SPECIFIC STYLE:\n- TikTok: fast energy, punchy hook in first 2 seconds, trending casual tone, direct address\n- Instagram Reels: slightly more polished, aspirational but relatable, smooth transitions\n- YouTube Shorts: slightly longer hook, more context, warmer tone\n- Pinterest: softer, slower pace, aesthetic-first, minimal speech\n\n---\nVIDEO STRUCTURE (weave naturally — do not label these sections):\n\nSECONDS 0–3 — HOOK:\nThe image comes to life mid-action. The person in the image is already moving — a subtle turn, a natural laugh, fabric catching light. Camera already rolling, slightly handheld. Product visible immediately.\n\nSECONDS 3–18 — SHOWCASE:\nThe person moves naturally within the setting shown in the image — the same background, same lighting, same outfit. Camera drifts organically, never locks off. Autofocus breathes slightly. They speak naturally:\n1. An emotional, unscripted opener — no \"okay so...\"\n2. Organic mention of \"{{ $json.productName }}\"\n3. If price adds value: reference {{ $json.formattedPrice }} with genuine feeling, not a recitation and ensure to include the currency\n4. One tactile observation about the product — how it moves, feels, fits, or looks in this light\n\nSECONDS 18–28 — DETAIL:\nCamera drifts closer toward the product's most compelling feature — the exact detail visible in the image. Slight rack focus. One final genuine line.\n\nSECONDS 28–30 — CTA:\nNatural downward glance, soft smile. Organic. No scripted sign-off.\n\n---\nCAMERA:\nNatural handheld iPhone throughout — vertical micro-movements, slight horizontal drift, 1–2° rotation, subtle autofocus. Never static, never gimbal-smooth.\n\n---\nVISUAL:\nSame lighting and environment as the image — natural window light, soft shadows, depth-of-field. iPhone aesthetic: slight motion blur, natural grain, true skin tones. No filters, no overlays, no text.\n\n---\nOUTPUT:\nOne continuous paragraph (200–280 words). Present tense. Grounded in the specific person and scene from the image provided.\n\n---\nTASK:\nDescribe the 30-second video as if it already exists and you are watching it back. Write in present tense. One continuous paragraph, 200–280 words. No bullet points. No rules. No meta-commentary.\n\n---\nPLATFORM-SPECIFIC STYLE:\n- TikTok: fast energy, punchy hook in first 2 seconds, trending casual tone, direct address\n- Instagram Reels: slightly more polished, aspirational but relatable, smooth transitions\n- YouTube Shorts: slightly longer hook, more context, warmer tone\n- Pinterest: softer, slower pace, aesthetic-first, minimal speech\n\n---\nVIDEO STRUCTURE (weave naturally — do not label these sections):\n\nSECONDS 0–3 — HOOK:\nThe image comes to life mid-action. The person in the image is already moving — a subtle turn, a natural laugh, fabric catching light. Camera already rolling, slightly handheld. Product visible immediately.\n\nSECONDS 3–18 — SHOWCASE:\nThe person moves naturally within the setting shown in the image — the same background, same lighting, same outfit. Camera drifts organically, never locks off. Autofocus breathes slightly. They speak naturally:\n1. An emotional, unscripted opener — no \"okay so...\"\n2. Organic mention of \"{{ $json.productName }}\"\n3. If price adds value: reference {{ $json.formattedPrice }} with genuine feeling, not a recitation\n4. One tactile observation about the product — how it moves, feels, fits, or looks in this light\n\nSECONDS 18–28 — DETAIL:\nCamera drifts closer toward the product's most compelling feature — the exact detail visible in the image. Slight rack focus. One final genuine line.\n\nSECONDS 28–30 — CTA:\nNatural downward glance, soft smile. Organic. No scripted sign-off.\n\n---\nCAMERA:\nNatural handheld iPhone throughout — vertical micro-movements, slight horizontal drift, 1–2° rotation, subtle autofocus. Never static, never gimbal-smooth.\n\n---\nVISUAL:\nSame lighting and environment as the image — natural window light, soft shadows, depth-of-field. iPhone aesthetic: slight motion blur, natural grain, true skin tones. No filters, no overlays, no text.\n\n---\nOUTPUT:\nOne continuous paragraph (200–280 words). Present tense. Grounded in the specific person and scene from the image provided.",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        3792,
+        224
+      ],
+      "id": "5c3f1984-6a3d-44f7-804b-e8e8196cae09",
+      "name": "Generate Video Prompt",
+      "credentials": {
+        "openAiApi": {
+          "id": "YDXd65OsllrtIZzk",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "Sbx3AmEpeqOGUDoU",
+          "mode": "list",
+          "cachedResultName": "Product Images Urls",
+          "cachedResultUrl": "/projects/4UWOE2XdTPKMSq4h/datatables/Sbx3AmEpeqOGUDoU"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "productName",
+              "keyValue": "={{ $('Get Product Image Urls').item.json.productName }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "veo3Prompt": "={{ $json['0'].content[0].text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "productName",
+              "displayName": "productName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "productimgUrl",
+              "displayName": "productimgUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "productPrice",
+              "displayName": "productPrice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "nanobananaPrompt",
+              "displayName": "nanobananaPrompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "veo3Prompt",
+              "displayName": "veo3Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "finalVideoPrompt",
+              "displayName": "finalVideoPrompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        4016,
+        224
+      ],
+      "id": "fe2e8210-9573-4db3-985c-3710d4205002",
+      "name": "Update row(s)1"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "modelId": {
+          "__rl": true,
+          "value": "models/veo-3.0-fast-generate-001",
+          "mode": "list",
+          "cachedResultName": "models/veo-3.0-fast-generate-001"
+        },
+        "prompt": "={{ $json.veo3Prompt }}",
+        "options": {
+          "sampleCount": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        4240,
+        288
+      ],
+      "id": "21164348-4191-4332-8cfa-1aff5f005865",
+      "name": "Generate a video",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "fcE4BtMv8iq9Mr5T",
+          "name": "Nano_Banana_Gemini_Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract the generated image from Gemini HTTP response\n// Response shape: { candidates: [{ content: { parts: [{ inlineData: { mimeType, data } }] } }] }\nconst results = [];\n\nfor (const item of items) {\n  const candidates = item.json.candidates;\n  if (!candidates || candidates.length === 0) {\n    throw new Error('Gemini returned no candidates. Full response: ' + JSON.stringify(item.json));\n  }\n\n  const parts = candidates[0].content.parts;\n  const imagePart = parts.find(p => p.inlineData && p.inlineData.data);\n\n  if (!imagePart) {\n    throw new Error('No image part found in Gemini response. Parts: ' + JSON.stringify(parts.map(p => Object.keys(p))));\n  }\n\n  const base64Image = imagePart.inlineData.data;\n  const mimeType = imagePart.inlineData.mimeType || 'image/png';\n\n  // Convert base64 to binary buffer for downstream nodes\n  const binaryData = Buffer.from(base64Image, 'base64');\n\n  results.push({\n    json: {\n      generatedImageBase64: base64Image,\n      generatedImageMimeType: mimeType,\n    },\n    binary: {\n      data: await this.helpers.prepareBinaryData(binaryData, 'generated_model_image.png', mimeType)\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3344,
+        48
+      ],
+      "id": "b2a4d74f-e6bc-44bd-bacd-259ad30fbfde",
+      "name": "Extract Generated Image"
+    },
+    {
+      "parameters": {
+        "html": "<div style=\"font-family:sans-serif;padding:20px;background:#0f0f0f;min-height:100vh\">\n  <h2 style=\"color:#fff;margin-bottom:4px\">🧥 Generated Model Image</h2>\n  <p style=\"color:#aaa;font-size:13px;margin-top:0\">Product: {{ $('Get Product Image Urls').item.json.productName }}</p>\n  <img \n    src=\"data:{{ $json.generatedImageMimeType }};base64,{{ $json.generatedImageBase64 }}\" \n    style=\"max-width:100%;border-radius:12px;box-shadow:0 4px 32px rgba(0,0,0,0.6)\" \n    alt=\"Generated product model image\"\n  />\n  <p style=\"color:#666;font-size:11px;margin-top:12px\">Model: gemini-2.5-flash-image-preview-05-20 · Garment-locked generation</p>\n</div>"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        3568,
+        0
+      ],
+      "id": "d29c6d3d-2ff8-4c3e-a2e5-17a7a40962b0",
+      "name": "Preview Generated Image"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3568,
+        224
+      ],
+      "id": "413758a1-faba-46db-b79b-8d0cd61d9ecf",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Set Metadata — builds formatted fields per item and preserves binary image.\nconst results = [];\n\nfor (let index = 0; index < items.length; index++) {\n  const item = items[index];\n  const source = $('Get Product Image Urls').all()[index].json;\n\n  const productName  = source.productName  || '';\n  const productPrice = source.productPrice;\n  const currency     = source.currency     || 'USD';\n  const platform     = source.platform     || 'TikTok';\n\n  const symbols = {\n    USD: '$', EUR: '€', GBP: '£', AUD: 'A$', CAD: 'C$',\n    NGN: '₦', ZAR: 'R', JPY: '¥', INR: '₹', BRL: 'R$', MXN: 'MX$'\n  };\n  const symbol = symbols[currency] || (currency + ' ');\n  const formattedPrice = (!productPrice || productPrice === 0)\n    ? ''\n    : symbol + Number(productPrice).toFixed(2) + ' ' + currency;\n\n  results.push({\n    json: {\n      productName,\n      productPrice,\n      currency,\n      platform,\n      formattedPrice,\n      editedimage: item.json.editedimage,\n    },\n    binary: item.binary,\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2240,
+        128
+      ],
+      "id": "602617bb-3a3e-46c4-a678-bc50265953f5",
+      "name": "Set Metadata"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Restore Set Metadata fields after Update row(s) wiped them.\n// Uses index-aware lookup so each item in the batch gets its own metadata.\nconst results = [];\n\nfor (let index = 0; index < items.length; index++) {\n  const meta = $('Set Metadata').all()[index].json;\n\n  results.push({\n    json: {\n      productName:    meta.productName,\n      productPrice:   meta.productPrice,\n      currency:       meta.currency,\n      platform:       meta.platform,\n      formattedPrice: meta.formattedPrice,\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2928,
+        272
+      ],
+      "id": "637bb547-b931-4d46-869b-9c49bccec68d",
+      "name": "Carry Metadata"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Product Image Urls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Get Resolution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Resolution": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Set Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create NanoBanana Prompt": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)": {
+      "main": [
+        [
+          {
+            "node": "Carry Metadata",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Product Image Urls": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Extract Generated Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Video Prompt": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Generate a video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Generated Image": {
+      "main": [
+        [
+          {
+            "node": "Preview Generated Image",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Generate Video Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate a video": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Metadata": {
+      "main": [
+        [
+          {
+            "node": "Create NanoBanana Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Carry Metadata": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "bbfff5e7-091d-4135-b783-25fa33520d5e",
+  "meta": {
+    "instanceId": "05ef9ef9117a5234413eaaaf5ebca5ef583f91e1fc61464904891935204909c7"
+  },
+  "id": "a3wpbNblueqNCQcT",
+  "tags": []
+}
