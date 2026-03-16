@@ -1,0 +1,668 @@
+{
+  "name": "Agentic Jira Triage with LLM Summary-v2",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "9d112fdb-5ec2-4b67-b5e6-cbf19d376e01",
+      "name": "Cron Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -1808,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 3,
+        "options": {
+          "jql": "=Project = \"Vulnerability Management\"\nAND\n\"issuetype\" = \"DATADOGVULNERABILITY\"\nAND status = \"PENDING TRIAGE\" \nOR \"Assignee\" IS \"EMPTY\"\n"
+        }
+      },
+      "id": "7d151623-50af-4911-8a67-bb568d57da58",
+      "name": "Search Jira Issues",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        -1504,
+        352
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "EhFpUE9UpTzDBPWR",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {
+          "reset": "={{ false }}"
+        }
+      },
+      "id": "f1d88336-67c3-4d40-828c-ee564183e5de",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Extract service name from issue summary or description\nconst item = $input.item.json;\n\n// Get the service identifier from summary or description\nconst summary = item.fields?.summary || '';\nconst description = item.fields?.description || '';\n\n// Try to find service identifier in summary first, then description\nlet serviceIdentifier = summary;\nif (!serviceIdentifier) {\n  serviceIdentifier = description;\n}\n\n// Extract service name: if contains '/', take text after last '/'\n// Otherwise use the entire identifier\nlet serviceName = serviceIdentifier;\nif (serviceIdentifier.includes('/')) {\n  const parts = serviceIdentifier.split('/');\n  serviceName = parts[parts.length - 1];\n}\n\n// Return all input fields plus the new serviceName field\nreturn {\n \n  serviceName: serviceName.trim()\n};\n"
+      },
+      "id": "162cbc25-fbb7-46a5-8684-0fc9aa3429f1",
+      "name": "Extract Service Name",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "3200fe38-72c3-41a5-91de-4f83c6f2fd27",
+      "name": "Lookup Manager in Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        768
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "EGUlUnCpIn1dn8sZ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "issueKey": "={{ $json.key }}",
+        "updateFields": {
+          "assignee": {
+            "__rl": true,
+            "value": "={{ $json.JiraAccountId }}",
+            "mode": "id"
+          }
+        }
+      },
+      "id": "189ed093-4686-4449-9800-f4b64978df68",
+      "name": "Assign Jira Issue",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        656,
+        336
+      ],
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "EhFpUE9UpTzDBPWR",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.fields.priority.name}}",
+              "value2": "Critical"
+            },
+            {
+              "value1": "={{$json.fields.priority.name}}",
+              "value2": "High"
+            }
+          ]
+        }
+      },
+      "id": "153ee201-14ad-4282-9730-8ff8bb7012d9",
+      "name": "Check Priority",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        64,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const items = [];\n\nfor (const item of $input.all()) {\n  const issue = item.json;\n\n  const priority = issue.fields?.priority?.name || 'Unspecified';\n  const discoveryDateStr = issue.fields?.created; // or your custom field\n  const discoveryDate = discoveryDateStr ? new Date(discoveryDateStr) : null;\n\n  let addDays = 0;\n\n  // \ud83d\udd0d Priority check happens here\n  if (priority === 'Critical') {\n    addDays = 20;\n  } else if (priority === 'High') {\n    addDays = 40;\n  } else {\n    addDays = 0; // Medium/Low \u2192 no remediation target, unless you want one\n  }\n\n  let remediationTargetDate = null;\n\n  if (discoveryDate && addDays > 0) {\n    const remediationDate = new Date(discoveryDate.getTime());\n    remediationDate.setDate(remediationDate.getDate() + addDays);\n    remediationTargetDate = remediationDate.toISOString().split('T')[0];\n  }\n\n  items.push({\n    json: {\n      ...issue,\n      serviceName: issue.serviceName,\n      ManagerName: issue.ManagerName,\n      ManagerEmail: issue.ManagerEmail,\n      JiraAccountId: issue.JiraAccountId,\n      priority,\n      discoveryDate: discoveryDateStr,\n      remediationTargetDate,   // will be null for non Critical/High\n    },\n  });\n}\n\nreturn items;\n\n\n\n// const discoveryDate = new Date($json.fields.created);\n// const priority = $json.fields.priority.name;\n// const daysToAdd = priority === 'Critical' ? 20 : 40;\n// discoveryDate.setDate(discoveryDate.getDate() + daysToAdd);\n// return [{ remediationDate: discoveryDate.toISOString().split('T')[0], key: $json.key, fields: $json.fields, Manager: $json.Manager }];"
+      },
+      "id": "9e9b55a2-ce1d-49e1-86fb-d663df8fe22a",
+      "name": "Calculate Remediation Date",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        880,
+        192
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "updateFields": {}
+      },
+      "id": "29ddf440-8bb8-44d4-9f63-07cee5a4505e",
+      "name": "Change Status to Triage",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        1952,
+        624
+      ],
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "EhFpUE9UpTzDBPWR",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "commentText",
+              "value": "=={{ $json.data?.[0]?.message?.content \n  || $json.data?.[0]?.text \n  || $json.choices?.[0]?.message?.content \n  || $json.choices?.[0]?.text \n  || $json.message \n  || $json.text \n  || \"\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "41ed233c-dc6e-414e-ad02-9cdee6b6415f",
+      "name": "Set commentText",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI assistant helping automate Jira security triage.\n\nGenerate a short, professional Jira comment (2\u20134 sentences) summarizing the triage details for this issue:\n\n- Issue key: {{ $json[\"key\"] }}\n- Service name: {{ $json[\"serviceName\"] }}\n- Priority: {{ $json[\"priority\"] }}\n- Discovery date: {{ $json[\"discoveryDate\"] }}\n- Remediation target date: {{ $json[\"remediationTargetDate\"] || \"None\" }}\n- Engineering manager: {{ $json[\"ManagerName\"] }} ({{ $json[\"ManagerEmail\"] }})\n\nRules:\n- If the priority is Critical or High and a remediation target date is present, explicitly mention that date (YYYY-MM-DD).\n- If no remediation target date is present, briefly state that no remediation target has been set based on the current priority.\n- Mention that the ticket has been assigned to the engineering manager.\n- Use a professional tone, no greetings or signatures.\n- Output only the comment text.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1088,
+        144
+      ],
+      "id": "ae25a759-479a-43ab-9bfa-2562ec97b1a3",
+      "name": "AI Agent",
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1072,
+        320
+      ],
+      "id": "71c62206-9a40-4e2d-ae74-50fec6e78af7",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "resource": "issueComment",
+        "comment": "={{ $json.output }}",
+        "options": {},
+        "issueKey": "={{ $json.key }}"
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        256
+      ],
+      "id": "583874f4-69be-4a22-ac9e-1be1d7a63f30",
+      "name": "Add a comment",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "EhFpUE9UpTzDBPWR",
+          "name": "Jira SW Cloud account"
+        }
+      },
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "content": "Create a n8n agentic workflow for this issue that seamlessly simplifies users day to day work: Find Jira issues under pending triage queue. - pull service name from the jira Issue id name ( usually after the forward slash in the names) - map the service name to the Engineering manager ( in the Google sheet) - Go to jira and assign the name to the owner. - check for critical or high in priority field. If critical, set remediation target date to 20 days from discovery. If high, set remediation target date to 40 days from discovery. Update the jira ticket with a summary including the priority and potential date of remediation, tagging the Engineering manager. Change ticket status to Triage.",
+        "height": 256,
+        "width": 448
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        912
+      ],
+      "typeVersion": 1,
+      "id": "589e9c5a-eea6-4f88-b8ad-9f3391353e52",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "updateFields": {
+          "statusId": {
+            "mode": "list",
+            "value": "={{ $json.key }}"
+          }
+        },
+        "issueKey": "={{ $json.key }}"
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        240
+      ],
+      "id": "68df4d67-555f-475f-bd2e-b0eb0b6b8c2d",
+      "name": "Update an issue",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "EhFpUE9UpTzDBPWR",
+          "name": "Jira SW Cloud account"
+        }
+      },
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yimIY7nE2Mpn6VSRFv4PHCFSqzVQmBS9vnll6vbUh8U",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Active",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yimIY7nE2Mpn6VSRFv4PHCFSqzVQmBS9vnll6vbUh8U/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1360,
+        576
+      ],
+      "id": "9a1b7499-1e78-4dff-ac7f-95e1b575e202",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "EGUlUnCpIn1dn8sZ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://depopmarket.atlassian.net/rest/api/3/user/search?query=user@email.com",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "jiraSoftwareCloudApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "Query",
+              "value": "={{ $json.Email.urlEncode() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1168,
+        1520
+      ],
+      "id": "426e228b-8c7b-4506-8fc0-07ce2b3f7acb",
+      "name": "HTTP Request",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nrR8zgDVdkMxAZpv",
+          "name": "Header Auth account"
+        },
+        "jiraSoftwareCloudApi": {
+          "id": "EhFpUE9UpTzDBPWR",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This node receives items routed from the If-loop's TRUE branch (status = \"success\")\n// Match service name already validated serviceName and JiraAccountId \u2014 we trust that here.\n// We do a final safety check on JiraAccountId before proceeding to Assign Jira Issue.\n\nconst items = $input.all();\n\nconst results = [];\n\nfor (const item of items) {\n  const data = item.json;\n\n  // Safety net: if somehow a non-success item slips through, skip it gracefully\n  if (data.status === 'error') {\n    console.log(`Skipping item with error: ${data.error}`);\n    continue;\n  }\n\n  const jiraId = data.JiraAccountId;\n\n  if (!jiraId || String(jiraId).trim() === '') {\n    // Soft fail \u2014 log and skip, do not throw (would break the loop)\n    results.push({\n      json: {\n        ...data,\n        error: 'Jira ID account missing',\n        status: 'failed'\n      }\n    });\n    continue;\n  }\n\n  // All good \u2014 pass item through to Assign Jira Issue\n  results.push({\n    json: {\n      ...data,\n      status: 'success'\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        352
+      ],
+      "id": "89108419-5202-4683-a564-ab1e146b1d4d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -496,
+        368
+      ],
+      "id": "69f3efe7-7e21-4c04-a2ac-6f49d1a67ae1",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get the Jira Service Name we extracted earlier\nconst jiraServiceName = $node[\"Extract Service Name\"].json.serviceName.toLowerCase().trim();\n\n// 2. Access the original Jira Issue (from the batch) to keep the Ticket Key/ID\nconst jiraIssue = $node[\"Split In Batches\"].json;\n\n// 3. Access all rows from the Google Sheet node\nconst sheetRows = $items(\"Get row(s) in sheet\"); \n\nlet bestMatch = null;\n\n// 4. Loop through every row in the sheet to find a match\nfor (const row of sheetRows) {\n  // Replace 'Name' with the exact column header from your sheet\n  const sheetName = String(row.json.Name || \"\").toLowerCase().trim(); \n  \n  // CHECK: Does the Jira name contain the Sheet name?\n  if (sheetName && (jiraServiceName.includes(sheetName) || sheetName.includes(jiraServiceName))) {\n    bestMatch = row.json;\n    break; \n  }\n}\n\n// 5. Scenario: Vulnerability not identified\nif (!bestMatch) {\n  return [{ \n    json: { \n      ...jiraIssue, \n      error: \"Vulnerability not identified\", \n      status: \"error\",\n      originalName: jiraServiceName \n    } \n  }];\n}\n\n// 6. Scenario: Jira ID account missing\nif (!bestMatch.JiraAccountId || bestMatch.JiraAccountId.trim() === \"\") {\n  return [{ \n    json: { \n      ...jiraIssue, \n      ...bestMatch,\n      error: \"Jira ID account missing\", \n      status: \"error\" \n    } \n  }];\n}\n\n// 7. Success: Return the clean data from the sheet merged with Jira data\nreturn [{ \n  json: { \n    ...jiraIssue,      // Preserve Jira Ticket Key, Priority, etc.\n    ...bestMatch,      // Add Manager info and Jira ID\n    status: \"success\",\n    serviceName: bestMatch.Name // TRIMS/REPLACES the name with the clean Sheet version\n  } \n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        336
+      ],
+      "id": "563969d2-eb9a-40af-a02d-59b5737efebf",
+      "name": "Match service name"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4132117b-e093-4683-8cd6-efc40a73df40",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "error",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "92dbf150-9bf7-4963-a68d-7a49af377950",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        352
+      ],
+      "id": "5ba6568a-1745-4f69-8156-07697b9f5c5c",
+      "name": "If-loop"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1232,
+        368
+      ],
+      "id": "b35effa1-28ff-4fd3-b674-caed56af8749",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cron Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search Jira Issues",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Jira Issues": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Extract Service Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Service Name": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assign Jira Issue": {
+      "main": [
+        [
+          {
+            "node": "Calculate Remediation Date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Remediation Date": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Add a comment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add a comment": {
+      "main": [
+        [
+          {
+            "node": "Update an issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Assign Jira Issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Match service name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Match service name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Match service name": {
+      "main": [
+        [
+          {
+            "node": "If-loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If-loop": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update an issue": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "df25e10e-0c67-4d36-8221-94f7b8483858",
+  "meta": {
+    "instanceId": "36902d3decc6b71e5b2bc2a2d2d6242460516e6a3f7bab1b493513d53d3f729f"
+  },
+  "id": "nL0UpslzCEGa9E37",
+  "tags": []
+}
