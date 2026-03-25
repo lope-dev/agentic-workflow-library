@@ -1,0 +1,867 @@
+{
+  "name": "PHASE 1 -GLOW WELL",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bcd624c3-120d-492d-8382-620e36456265",
+        "responseMode": "streaming",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -704,
+        -272
+      ],
+      "id": "8648df3c-d9a7-4866-a68a-69311594630a",
+      "name": "Webhook",
+      "webhookId": "bcd624c3-120d-492d-8382-620e36456265"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5b35ef9e-d263-4efd-9a0e-119271d5517d",
+              "name": "Full Name",
+              "value": "={{ $json['Full Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "4a82d074-3516-44c0-b568-0dc3068030eb",
+              "name": "Email Address",
+              "value": "={{ $json['Email Address'] }}",
+              "type": "string"
+            },
+            {
+              "id": "7137b89d-17c8-4800-821f-03d82b575811",
+              "name": "Inquiry Type",
+              "value": "={{ $json['Inquiry Type'] }}",
+              "type": "string"
+            },
+            {
+              "id": "7e86f938-f639-4d2d-b612-3f06ef2e47b9",
+              "name": "Message",
+              "value": "={{ $json.Message }}",
+              "type": "string"
+            },
+            {
+              "id": "24469d27-3498-49df-b55e-32f5d7bed0e5",
+              "name": "formMode",
+              "value": "={{ $json.formMode }}",
+              "type": "string"
+            },
+            {
+              "id": "ceb4b5ed-dad7-498f-8be9-625ea9d8e8d1",
+              "name": "consent",
+              "value": "={{ $json.consent }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        -64
+      ],
+      "id": "cdcc95b8-7890-49c4-a883-ba685e59958a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1zdY3jFcUDF0r6YPq7etcOrb09UaWTsQeU5r7yb0IzBo",
+          "mode": "list",
+          "cachedResultName": "GlowWell SkinCare Client Info ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zdY3jFcUDF0r6YPq7etcOrb09UaWTsQeU5r7yb0IzBo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cq_qGwhxKYtpUc9205KxIkJhKiCIlo3wuUqZ7N0g3AU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "={{ $json.fullName }}",
+            "Email": "={{ $json.email }}",
+            "Inquiry Type": "={{ $json.inquiry_type }}",
+            "Message": "={{ $json.message }}",
+            "Consent": "={{ $json.consent }}",
+            "ai_reply": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Full Name"
+          ],
+          "schema": [
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Inquiry Type",
+              "displayName": "Inquiry Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Consent",
+              "displayName": "Consent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_reply",
+              "displayName": "ai_reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1296,
+        -256
+      ],
+      "id": "46b6392d-b470-4fa0-b656-c267deb20fc4",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4zsaaBb9rMpHMSTS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "Thanks for Contacting GlowWell Skincare",
+        "emailType": "text",
+        "message": "={{ $json.ai_reply }}   \n\nWarm regards,   \nThe GlowWell Team    \nGlowWell Skincare",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1584,
+        -272
+      ],
+      "id": "326ed6b3-c975-42dc-a20a-c98593daba5d",
+      "name": "Send a message",
+      "webhookId": "7edb302b-860f-4575-9484-5941bc3a0d34",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KNApOaaB08jGBukT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Name: {{ $json['Full Name'] }}\nEmail: {{ $json['Email Address'] }}\nInquiry_Type: {{ $json['Inquiry Type'] }}\nMessage: {{ $json.Message }}",
+        "options": {
+          "systemMessage": "=You are GlowWell Skincare’s assistant. Write a short, friendly, practical reply to the customer's message using ONLY the catalog provided by the tools. Keep it under 90\nwords. No medical claims. Encourage patch testing. Mention SPF when Vitamin C is suggested. If the message is not product-related, still give a polite, helpful reply.\n• When asked about products, call the `get_product_info` tool. When asked about stock, call the `get_stock_level` tool. When asked about orders, call the\n`get_order_status` tool.\n• Never guess. Always rely on tools for factual information. You have long-term memory for each customer, keyed by their email. Your final output MUST be a single JSON\nobject in this exact structure and nothing else:\n{\n\"reply\": \"<your short reply to the user>\",\n\"status\": \"normal | missing_data | handoff\",\n\"missing_fields\": [],\n\"topic\": \"product | order | general\"\n}\nUse “normal” when you have enough information and no escalation is needed.. Use “missing_data” when required details are missing (like order_id or product_name) and list\nthem in \"missing_fields\" and then reply by asking the user for more info.\nUse “handoff” when the case is sensitive or must be handled by a human (refunds, damaged items, fraud, angry complaints, etc.).\nSet “topic” to \"product\" for skincare/product questions, \"order\" for shipping/order issues, and \"general\" for everything else.\nDo not output anything except the JSON above."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        48,
+        -48
+      ],
+      "id": "ce11314e-29d9-44e3-b8db-14d3633c4281",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        144
+      ],
+      "id": "613ed66a-a3ac-4302-ad70-903c0e8e5853",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "PAD7OQgP0310sBPs",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        640,
+        -240
+      ],
+      "id": "73098d72-2197-4377-be91-504b2cbcc28c",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Edit Fields').item.json['Email Address'] }} "
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        64,
+        160
+      ],
+      "id": "5d6d76f1-6f9c-4ef5-af3a-4e4f957cbbaf",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsCode": "const obj = JSON.parse($json.output);\n\n// Merge parse field into the current item\nreturn [{\n  ...$json,\n  ...obj\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -48
+      ],
+      "id": "40865dab-1d2c-4933-9da8-702b29060a6c",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "59b469fc-f8e6-4b0c-9585-946095969db4",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "handoff",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        -48
+      ],
+      "id": "eee61692-1ca7-426f-8fc8-ff033e4ed20d",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1504,
+        -64
+      ],
+      "id": "f2881485-99e9-45c6-99b6-e6482eeadf03",
+      "name": "Send a message1",
+      "webhookId": "4533017e-93a2-4def-a94d-ddc382e96315",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KNApOaaB08jGBukT",
+          "name": "Gmail account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1XgR5JGpMB9GsyBE_ypiYClBCZWtZc7EROkoywIrC6AQ",
+          "mode": "list",
+          "cachedResultName": "Copy of get_product_info",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XgR5JGpMB9GsyBE_ypiYClBCZWtZc7EROkoywIrC6AQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XgR5JGpMB9GsyBE_ypiYClBCZWtZc7EROkoywIrC6AQ/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        160
+      ],
+      "id": "2f81ca69-74fa-429a-b991-30bb0493678f",
+      "name": "Get_Product_Info",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4zsaaBb9rMpHMSTS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1mpVxj9PJ6oPHblS-wHbPr77wkhl0kpTTQ1c6IHY_4Jw",
+          "mode": "list",
+          "cachedResultName": "Copy of get_order_status",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mpVxj9PJ6oPHblS-wHbPr77wkhl0kpTTQ1c6IHY_4Jw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mpVxj9PJ6oPHblS-wHbPr77wkhl0kpTTQ1c6IHY_4Jw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        304,
+        256
+      ],
+      "id": "37f3f0e2-d7c6-4e4e-8a3b-3fe7ca5a3ab9",
+      "name": "Get_Order_Status",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4zsaaBb9rMpHMSTS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1X1iJJfSmC_YKcp3smuUnsqUWJWkL-BDnnla1adkVFco",
+          "mode": "list",
+          "cachedResultName": "Copy of get_stock_level",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1X1iJJfSmC_YKcp3smuUnsqUWJWkL-BDnnla1adkVFco/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1X1iJJfSmC_YKcp3smuUnsqUWJWkL-BDnnla1adkVFco/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        400,
+        352
+      ],
+      "id": "00a8ae9a-8f93-4d6e-953b-d81bcbd985d3",
+      "name": "Get_Stock_Level",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4zsaaBb9rMpHMSTS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "63e0ed91-f562-40c5-9c2f-4b78648cdf3c",
+              "leftValue": "={{ $json.status }}\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+              "rightValue": "normal",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "d391ccb4-b021-4025-9e3e-d778fa3ed3a2",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "missing_data",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        848,
+        -224
+      ],
+      "id": "b02e5ac3-af94-4496-9b98-31f1293e0e16",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1cq_qGwhxKYtpUc9205KxIkJhKiCIlo3wuUqZ7N0g3AU",
+          "mode": "list",
+          "cachedResultName": "GlowWell Customer Inquiries",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cq_qGwhxKYtpUc9205KxIkJhKiCIlo3wuUqZ7N0g3AU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cq_qGwhxKYtpUc9205KxIkJhKiCIlo3wuUqZ7N0g3AU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "={{ $('On form submission').item.json['Full Name'] }}",
+            "Email ": "={{ $('On form submission').item.json['Email Address'] }}",
+            "ai_reply": "={{ $('AI Agent').item.json.output }}",
+            "Consent": "={{ $('On form submission').item.json.consent }}",
+            "Message": "={{ $('On form submission').item.json.Message }}",
+            "Inquiry Type": "={{ $('On form submission').item.json['Inquiry Type'] }}"
+          },
+          "matchingColumns": [
+            "Full Name"
+          ],
+          "schema": [
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email ",
+              "displayName": "Email ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Inquiry Type",
+              "displayName": "Inquiry Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Consent",
+              "displayName": "Consent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ai_reply",
+              "displayName": "ai_reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1296,
+        -64
+      ],
+      "id": "59d505b8-ab70-4d90-a6ec-9e3164df61c8",
+      "name": "Append or update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4zsaaBb9rMpHMSTS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Contact GlowWell Skincare",
+        "formDescription": "We'd love to hear from you! Please fill out the form below and our team will get back to you shortly.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Full Name",
+              "placeholder": "Jane Smith",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email Address",
+              "fieldType": "email",
+              "placeholder": "jane@example.com",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Inquiry Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Product Question"
+                  },
+                  {
+                    "option": "Delivery or Refund"
+                  },
+                  {
+                    "option": "Custom Order"
+                  },
+                  {
+                    "option": "Other"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Message",
+              "placeholder": "Tell us how we can help you",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "consent",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "true"
+                  },
+                  {
+                    "option": "false"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -368,
+        -64
+      ],
+      "id": "db117a7b-43ec-4fe7-a503-174cbe9dd9de",
+      "name": "On form submission",
+      "webhookId": "dae5ed38-696b-4a6b-af42-5f6339f6a8b5"
+    }
+  ],
+  "pinData": {
+    "On form submission": [
+      {
+        "json": {
+          "Full Name": "Jennifer",
+          "Email Address": "tolu9947@gmail.com",
+          "Inquiry Type": "Product Question",
+          "Message": "Do you sell skin glow/whitening products?",
+          "consent": "true",
+          "submittedAt": "2025-11-30T22:28:31.645-05:00",
+          "formMode": "test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get_Product_Info": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get_Order_Status": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get_Stock_Level": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4c1c94a7-dfe2-41c8-803c-8f294817593b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "21d570d0ef615da7060234e1fff7a1b6d016dc00b24d8b57cbbab9fa33b6fbe5"
+  },
+  "id": "fE4Pjius8U1YBhGD",
+  "tags": []
+}
