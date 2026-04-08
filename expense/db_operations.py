@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, text
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
-DATABASE_URL = "postgresql://expense_user:rodo4194@localhost:5432/expense_db"
+DATABASE_URL = "postgresql://expense_user:<yourpassword>@localhost:5432/expense_db"
 engine = create_engine(DATABASE_URL)
 
 
