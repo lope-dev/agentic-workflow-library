@@ -1,0 +1,7 @@
+streamlit
+sqlalchemy
+psycopg2-binary
+langchain
+langchain-ollama
+langchain-core
+werkzeug
