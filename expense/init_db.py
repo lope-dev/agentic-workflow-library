@@ -5,7 +5,7 @@ Run this once before starting the app.
 
 from sqlalchemy import create_engine, text
 
-DATABASE_URL = "postgresql://expense_user:rodo4194@localhost:5432/expense_db"
+DATABASE_URL = "postgresql://expense_user:<yourpassword>4@localhost:5432/expense_db"
 
 
 def init_database():
