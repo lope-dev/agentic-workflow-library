@@ -1,7 +1,7 @@
 # Expense Management System with LLM Integration
 
 ## Overview
-A multi-user personal expense management system that supports CRUD operations through both a traditional web interface and natural language commands powered by a local LLM (Ollama) via LangChain.
+A multi-user personal expense management system that supports operations through both a traditional web interface and natural language commands powered by a local LLM (Ollama) via LangChain.
 
 ## Tech Stack
 - **Database:** PostgreSQL (via Docker)
