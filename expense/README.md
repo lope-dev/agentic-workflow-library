@@ -1,4 +1,4 @@
-# Personal Expense Management System with LLM Integration
+# Expense Management System with LLM Integration
 
 ## Overview
 A multi-user personal expense management system that supports CRUD operations through both a traditional web interface and natural language commands powered by a local LLM (Ollama) via LangChain.
